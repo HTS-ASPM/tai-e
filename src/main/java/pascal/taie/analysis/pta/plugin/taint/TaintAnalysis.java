@@ -45,6 +45,7 @@ import pascal.taie.util.AnalysisException;
 import pascal.taie.util.Monitor;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -89,6 +90,8 @@ public class TaintAnalysis extends CompositePlugin {
     private static final Logger logger = LoggerFactory.getLogger(TaintAnalysis.class);
 
     private static final String TAINT_FLOW_GRAPH_FILE = "taint-flow-graph.dot";
+
+    private static final String TAINT_FLOWS_FILE = "taint-flows.json";
 
     private Solver solver;
 
@@ -261,5 +264,11 @@ public class TaintAnalysis extends CompositePlugin {
                         new TFGBuilder(solver.getResult(), taintFlows, manager).build(),
                         new File(World.get().getOptions().getOutputDir(), TAINT_FLOW_GRAPH_FILE)),
                 "TFGDumper");
+        File flowsFile = new File(World.get().getOptions().getOutputDir(), TAINT_FLOWS_FILE);
+        try {
+            new TaintFlowsDumper().dump(taintFlows, flowsFile);
+        } catch (IOException e) {
+            logger.error("Failed to write {}", flowsFile, e);
+        }
     }
 }
