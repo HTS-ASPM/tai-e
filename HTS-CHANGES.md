@@ -14,6 +14,7 @@ it with its SHA-256.
 | Commit | Change | Why |
 |---|---|---|
 | `f5f181da` | Soot frontend: map an annotation's `void.class` literal (class_info `V`) to `void` | Building the world aborted with "Invalid bytecode type descriptor: V" on real Android apps (Element 40106624). The Java frontend already handles this case. |
+| `0d8bcaa8` | Taint analysis also writes `taint-flows.json` (sources and sinks as signatures, with container, class, line and index) | Flows were only in the log and a DOT graph; the HTSOne deep scan reads them as data. |
 
 ## Syncing with upstream
 
