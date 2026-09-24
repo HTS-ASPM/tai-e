@@ -302,6 +302,13 @@ class Converter {
                 className = className.replace("java/lang/Class<", "")
                         .replace(">", "");
             }
+            // @MyAnnotation(type = void.class) is compiled to the class_info
+            // "V" (JVM Spec 4.7.16.1), which is not a field descriptor and
+            // cannot be passed to toTaieTypeDesc. BytecodeClassBuilder
+            // handles the same case for the Java frontend.
+            if (className.equals("V")) {
+                return new ClassElement("void");
+            }
             return new ClassElement(BytecodeDescriptors.toTaieTypeDesc(className));
         } else if (elem instanceof AnnotationAnnotationElem e) {
             return new AnnotationElement(convertAnnotation(e.getValue()));
