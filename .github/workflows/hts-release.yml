@@ -1,0 +1,40 @@
+# HTS-ASPM fork: build the fat jar for a tagged HTS release (v<upstream>-hts.<n>)
+# and publish it with its SHA-256, so the HTSOne mobile deep-scan image can pin it.
+# The fork's changes over pascal-lab/Tai-e are listed in HTS-CHANGES.md; the
+# source for every released jar is the tagged commit (LGPL-3.0, see COPYING.LESSER).
+name: HTS release
+
+on:
+  push:
+    tags:
+      - "v*-hts.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build fat jar
+        run: ./gradlew fatJar -x test
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          jar=$(ls build/tai-e-all-*.jar)
+          out="tai-e-all-${TAG#v}.jar"
+          cp "$jar" "$out"
+          sha256sum "$out" > "$out.sha256"
+          gh release create "$TAG" "$out" "$out.sha256" COPYING COPYING.LESSER \
+            --title "$TAG" \
+            --notes "Tai-e $(grep '^projectVersion' gradle.properties | cut -d= -f2) with the HTS-ASPM patches in HTS-CHANGES.md. Source: this tag. Licence: LGPL-3.0 (COPYING.LESSER, COPYING)."
